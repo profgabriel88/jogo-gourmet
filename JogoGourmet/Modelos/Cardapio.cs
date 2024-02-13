@@ -5,6 +5,7 @@ namespace JogoGourmet.Modelos
     public static class Cardapio
     {
         public static List<Tipo> Tipos;
+        public static bool acerto = false;
         private static string Bolo = "Bolo de Chocolate";
 
         /// <summary>
@@ -15,20 +16,9 @@ namespace JogoGourmet.Modelos
         /// <param name="nomePrato">O nome do prato</param>
         public static void InicializaCardapio(string nomeTipo, string nomePrato)
         {
-            Tipos = new List<Tipo>
-            {
-                new Tipo
-                {
-                    Nome = nomeTipo,
-                    Pratos = new List<Prato>
-                    {
-                        new Prato
-                        {
-                            Nome = nomePrato,
-                        }
-                    }
-                }
-            };
+            var prato = new Prato { Nome = nomePrato };
+            var tipo = new Tipo { Nome = nomeTipo, Prato = prato };
+            Tipos = [tipo];
         }
 
         /// <summary>
@@ -39,35 +29,39 @@ namespace JogoGourmet.Modelos
             Prompt.SetForegroundColor(ConsoleColor.Green);
             while (true)
             {
-                int len = Cardapio.Tipos.Count;
-                bool acerto = false;
+                acerto = false; 
+                int len = Tipos.Count;
                 Prompt.SetConsole("Pense em um prato que você gosta (enter)");
                 for (int i = 0; i < len; i++)
                 {
-                    var t = Cardapio.Tipos[i];
+                    var tipo = Tipos[i];
 
                     if (acerto) break;
 
-                    var resposta = Prompt.EscreveEAguardaResposta($"O prato que você pensou é {t.Nome} s/n?");
+                    var resposta = Prompt.EscreveEAguardaResposta($"O prato que você pensou é {tipo.Nome} s/n?");
 
-                    switch (resposta)
-                    {
-                        case "s":
-                            acerto = t.ApresentaPratos(t);
-                            break;
+                    if (resposta.Equals("s"))
+                        tipo.ApresentaPratos(tipo);
 
-                        case "n":
-                            if (i >= Cardapio.Tipos.Count - 1)
-                                EhBolo(t);
-                            break;
-                    }
+                    else if (resposta.Equals("n"))
+                        if (i >= Tipos.Count - 1)
+                            EhBolo(tipo);
                 }
             }
         }
 
-        private static bool EhBolo(Tipo tipo)
+        /// <summary>
+        /// Encerra a partida
+        /// </summary>
+        public static void AcerteiDeNovo()
         {
-            var resposta = Prompt.EscreveEAguardaResposta($"O prato que você pensou é {Cardapio.Bolo}?");
+            Prompt.EscreveEAguardaResposta("Acertei de novo! (enter)");
+            acerto = true;
+        }
+
+        private static void EhBolo(Tipo tipo)
+        {
+            var resposta = Prompt.EscreveEAguardaResposta($"O prato que você pensou é {Bolo} s/n??");
             switch (resposta)
             {
                 case "s":
@@ -75,20 +69,11 @@ namespace JogoGourmet.Modelos
                     break;
 
                 case "n":
-                    var novoTipo = tipo.AprendePrato(new Tipo(), Cardapio.Bolo);
-                    Cardapio.Tipos.Add(novoTipo);
+                    var novoTipo = tipo.AprendePrato(new Tipo(), Bolo);
+                    Tipos.Add(novoTipo);
                     break;
             }
-            return true;
+            acerto = true;
         }
-
-        public static bool AcerteiDeNovo()
-        {
-            Prompt.EscreveEAguardaResposta("Acertei de novo! (enter)");
-            return true;
-        }
-
-        
-
     }
 }
